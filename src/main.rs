@@ -25,7 +25,6 @@ use mysql::{OptsBuilder, Pool};
 use mysql::prelude::Queryable;
 use serde_json::{json, Value};
 
-
 fn main() {
     let mut json_data = json!([]); // Create an empty JSON array
     let opts = OptsBuilder::new()
