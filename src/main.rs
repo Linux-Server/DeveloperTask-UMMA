@@ -26,6 +26,7 @@ use mysql::prelude::Queryable;
 use serde_json::{json, Value};
 
 fn main() {
+    let table_name = "students".to_string();
     let mut json_data = json!([]); // Create an empty JSON array
     let opts = OptsBuilder::new()
         .ip_or_hostname(Some("sql12.freesqldatabase.com"))
@@ -38,19 +39,33 @@ fn main() {
     println!("The pool is {:?}", pool);
 
     let mut conn = pool.get_conn().unwrap();
-
-    match conn.query::<mysql::Row, _>("SELECT * FROM students") {
+    let get_query = format!("SELECT * FROM {table_name}");
+    match conn.query::<mysql::Row, _>(get_query) {
         Ok(result) => {
             println!("{:?}", result.len());
-
+            let row_json = json!({
+                    "table_name" : table_name,
+                    "total_count" : result.len()
+                });
+            // Add the row JSON to the array
+            json_data.as_array_mut().unwrap().push(row_json);
             // Iterate over the fetched rows and process them
-            for row in result {
+            for (value,row) in result.iter().enumerate() {
                 let id: i32 = row.get(0).unwrap();
                 let name: String = row.get(1).unwrap();
 
                 // ... (process other columns)
 
-                println!("ID: {} | Name: {}", id, name);
+                // println!("ID: {} | Name: {}", id, name);
+
+                let row_json = json!([{
+                    "id": id,
+                    "name": name,
+                }]);
+
+                // Add the row JSON to the array
+                json_data.as_array_mut().unwrap().push(row_json);
+
 
             }
 
@@ -61,6 +76,8 @@ fn main() {
     }
 
     // Release the connection back to the pool
+
+    println!("{:?}", json_data);
     drop(conn);
 }
 
