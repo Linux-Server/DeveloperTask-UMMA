@@ -1,14 +1,19 @@
 #![allow(unused_variables, unused_imports, dead_code)]
 use reqwest;
-use serde_json::json;
 use std::env;
 use std::fmt::format;
 use std::process;
 use tokio;
 use web3::{db_connection, describe_table, ipfs_get, ipfs_push};
+use serde_json::{json, Map, Value};
+
+use merkletreers::merkletree::tree::MerkleTree;
+
 
 #[tokio::main]
 async fn main() {
+      // checker().await;
+
     let args: Vec<String> = env::args().collect();
     let config = Config::build(&args).unwrap_or_else(|err| {
         println!("WARNING:: {err}");
@@ -62,7 +67,26 @@ async fn main() {
         }
     }
 
-    println!("{:#?}", json_data);
+    let my_vec = json_data["row"].as_array().unwrap().clone();
+    let mut cid_vec = vec![];
+    for i in my_vec{
+        let cid = ipfs_push(i).await;
+        cid_vec.push(cid);
+
+    }
+    println!("CID of IPFS : {:?}", cid_vec);
+    println!("");
+
+    let mut vec_of_str: Vec<&str> = cid_vec.iter().map(|s| s.as_str()).collect();
+    if vec_of_str.len() %2 != 0{
+        vec_of_str.push("");
+    }
+
+    let tree = MerkleTree::new(vec_of_str);
+    //
+    println!("The Merkle Tree {:?}", tree);
+
+    // Drop the mysql
     drop(conn);
 
     //ipfs_push().await;

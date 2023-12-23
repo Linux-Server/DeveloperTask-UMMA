@@ -5,6 +5,19 @@ use pinata_sdk::{PinByJson, PinataApi};
 use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 
+use ipfs_api::IpfsClient;
+use reqwest::{Client, Response};
+// use serde::{Deserialize, Serialize};
+use std::error::Error;
+use mysql::binlog::jsonb::Object;
+
+// #[derive(Serialize, Deserialize)]
+// struct Person {
+//     name: String,
+//     age: u32,
+// }
+
+
 pub fn db_connection(
     hostname: Option<&String>,
     username: Option<&String>,
@@ -49,23 +62,21 @@ pub async fn ipfs_get() {
     }
 }
 
-pub async fn ipfs_push() {
+pub async fn ipfs_push(data: Value)-> String{
     let api = PinataApi::new(
         "53eccefc8154167d1f21",
         "16e94c021d48176b52cc59fc071ba8833a2d75eeb48273de8e2ed60e30d8a5c8",
     )
     .unwrap();
 
-    // HashMap derives serde::Serialize
-    let mut json_data = HashMap::new();
-    json_data.insert("Creator", "Billa");
-
-    let result = api.pin_json(PinByJson::new(json_data)).await;
-
+    let result = api.pin_json(PinByJson::new(data)).await;
+    let mut hash = String::new();
     if let Ok(pinned_object) = result {
-        let hash = pinned_object.ipfs_hash;
-        println!("Hash : {:?}", hash)
+         hash = pinned_object.ipfs_hash;
+        // println!("Hash : {:?}", hash);
+
     }
+    hash
 }
 
 pub fn describe_table(
@@ -107,3 +118,36 @@ pub fn describe_table(
         }
     }
 }
+
+
+// pub async fn checker(){
+//
+//     // ipfs_client.set_gateway("https://ipfs.io");
+//     let person = Person {
+//         name: "John Doe".to_string(),
+//         age: 30,
+//     };
+//
+//     let json_data = serde_json::to_string(&person).unwrap();
+//
+//     let client = Client::new();
+//     let gateway_url = "https://gateway.ipfs.io";
+//     let add_url = format!("{}/api/v0/add", gateway_url);
+//
+//     let mut response = client.post(&add_url).body(json_data).send().await.expect("Nil");
+//
+//     let mut body = String::new();
+//     let body = response.text().await.unwrap();
+//
+//     let data: serde_json::Value = serde_json::from_str(&body).unwrap();
+//     let hash = data["Hash"].as_str().unwrap();
+//
+//     println!("JSON data added to IPFS with hash: {}", hash);
+//     println!("You can access the JSON data using the following URL:");
+//     println!("https://gateway.ipfs.io/ipfs/{}", hash);
+//
+//
+//
+//
+//
+// }
