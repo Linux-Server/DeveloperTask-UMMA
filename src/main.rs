@@ -35,7 +35,8 @@ async fn main() {
     let pool = db_connection(host, username, password, db_name);
     let pool = match pool{
         Ok(val) => val,
-        Err(_) => {
+        Err(err) => {
+            println!("The err {:?}", err);
             println!("ERROR:: Please make sure your database credentials are valid");
             process::exit(1);
         }
@@ -86,7 +87,9 @@ async fn main() {
     //
     println!("The Merkle Tree {:?}", tree);
 
-    // Drop the mysql
+    // Drop
+    //
+    //the mysql
     drop(conn);
 
     //ipfs_push().await;
