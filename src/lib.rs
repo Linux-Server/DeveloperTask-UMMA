@@ -6,19 +6,19 @@ use serde_json::{json, Map, Value};
 use std::collections::HashMap;
 
 pub fn db_connection(
-    hostname: Option<&str>,
-    username: Option<&str>,
-    password: Option<&str>,
-    db_name: Option<&str>,
-) -> Pool {
+    hostname: Option<&String>,
+    username: Option<&String>,
+    password: Option<&String>,
+    db_name: Option<&String>,
+) ->  Result<Pool, mysql::Error>{
     let opts = OptsBuilder::new()
-        .ip_or_hostname(Some(hostname.unwrap_or("sql12.freesqldatabase.com")))
-        .user(Some(username.unwrap_or("sql12672069")))
-        .pass(Some(password.unwrap_or("aVeqNDSepn")))
-        .db_name(Some(db_name.unwrap_or("sql12672069")));
+        .ip_or_hostname(hostname)
+        .user(username)
+        .pass(password)
+        .db_name(db_name);
 
-    let pool = Pool::new(opts).expect("Failed to create MySQL connection pool");
-    pool
+    let pool = Pool::new(opts)?;
+    Ok(pool)
 }
 
 pub async fn ipfs_get() {
@@ -73,7 +73,7 @@ pub fn describe_table(
     mysql_query: String,
     json_data: &mut Value,
     tag: &str,
-) {
+)->  Result<(), mysql::Error> {
     match conn.query::<mysql::Row, _>(mysql_query) {
         Ok(result) => {
             // Iterate over the fetched rows and process them
@@ -100,9 +100,10 @@ pub fn describe_table(
                     json_data[tag].as_array_mut().unwrap().push(row_json);
                 }
             }
+             Ok(())
         }
         Err(err) => {
-            println!("Error: {}", err);
+            Err(err)
         }
     }
 }
