@@ -1,7 +1,6 @@
 
 # DeveloperTask-UMMA
-
-A brief description of what this project does and who it's for
+This task is written in Rust
 
 
 ## Prerequsite
